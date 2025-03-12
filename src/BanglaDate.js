@@ -5,16 +5,31 @@
  */
 const GREGORIAN_OFFSET = 1947177.2; // Julian Day Number for April 14, 593 CE
 const SURYA_SIDDHANTA_YEAR = 365.25875648; // Precise Surya Siddhanta solar year length
+// Month names in Latin script
 const MONTHS = ['Boishakh', 'Joishtho', 'Asharh', 'Shrabon', 'Bhadro', 'Ashwin', 
                 'Kartik', 'Ogrohayon', 'Poush', 'Magh', 'Falgun', 'Choitro'];
+// Month names in Bangla script
+const MONTHS_BANGLA = ['বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন',
+                       'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র'];
+// Day names in Latin script
 const DAYS = ['Robibar', 'Sombar', 'Mongolbar', 'Budhbar', 'Brihoshpotibar', 'Shukrobar', 'Shonibar'];
+// Day names in Bangla script
+const DAYS_BANGLA = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
 
-// Regional variations for month names
+// Regional variations for month names in Latin script
 const REGIONAL_MONTHS = {
     'west-bengal': ['Baisakh', 'Jaishtha', 'Ashadh', 'Shraban', 'Bhadra', 'Ashwin',
                    'Kartik', 'Agrahayon', 'Poush', 'Magh', 'Phalgun', 'Chaitra'],
     'chittagong': ['Boishakh', 'Joishtho', 'Asharh', 'Shrabon', 'Bhadro', 'Ashwin',
                    'Kartik', 'Ogrohayon', 'Poush', 'Magh', 'Falgun', 'Choitro']
+};
+
+// Regional variations for month names in Bangla script
+const REGIONAL_MONTHS_BANGLA = {
+    'west-bengal': ['বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন',
+                   'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র'],
+    'chittagong': ['বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন',
+                   'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র']
 };
 
 /**
@@ -228,38 +243,70 @@ class BanglaDate {
     setTime(time) { this._date.setTime(time); return this.getTime(); }
 
     // String representations
-    toString(region = 'bangladesh') {
-        const monthArray = region === 'west-bengal' ? REGIONAL_MONTHS['west-bengal'] :
-                         region === 'chittagong' ? REGIONAL_MONTHS['chittagong'] : MONTHS;
-
-        return `${DAYS[this.getDay()]} ${this.getDate()} ${monthArray[this.getMonth()]} ${this.getFullYear()}`;
+    toString(region = 'bangladesh', useBanglaScript = false) {
+        const monthArray = region === 'west-bengal' 
+            ? (useBanglaScript ? REGIONAL_MONTHS_BANGLA['west-bengal'] : REGIONAL_MONTHS['west-bengal'])
+            : region === 'chittagong' 
+                ? (useBanglaScript ? REGIONAL_MONTHS_BANGLA['chittagong'] : REGIONAL_MONTHS['chittagong']) 
+                : (useBanglaScript ? MONTHS_BANGLA : MONTHS);
+        
+        const dayArray = useBanglaScript ? DAYS_BANGLA : DAYS;
+        
+        // Convert numbers to Bangla numerals if using Bangla script
+        const date = useBanglaScript ? this.toBanglaNumeral(this.getDate()) : this.getDate();
+        const year = useBanglaScript ? this.toBanglaNumeral(this.getFullYear()) : this.getFullYear();
+        
+        return `${dayArray[this.getDay()]} ${date} ${monthArray[this.getMonth()]} ${year}`;
+    }
+    
+    // Helper method to convert numbers to Bangla numerals
+    toBanglaNumeral(number) {
+        const bengaliNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return number.toString().split('').map(digit => 
+            isNaN(parseInt(digit)) ? digit : bengaliNumerals[parseInt(digit)]
+        ).join('');
     }
 
-    toDateString() {
-        return `${DAYS[this.getDay()]} ${MONTHS[this.getMonth()]} ${this.getDate()} ${this.getFullYear()}`;
+    toDateString(useBanglaScript = false) {
+        const dayArray = useBanglaScript ? DAYS_BANGLA : DAYS;
+        const monthArray = useBanglaScript ? MONTHS_BANGLA : MONTHS;
+        
+        // Convert numbers to Bangla numerals if using Bangla script
+        const date = useBanglaScript ? this.toBanglaNumeral(this.getDate()) : this.getDate();
+        const year = useBanglaScript ? this.toBanglaNumeral(this.getFullYear()) : this.getFullYear();
+        
+        return `${dayArray[this.getDay()]} ${monthArray[this.getMonth()]} ${date} ${year}`;
     }
 
     toTimeString() {
         return this._date.toTimeString();
     }
 
-    toLocaleString() {
-        return `${this.toDateString()} ${this.toTimeString()}`;
+    toLocaleString(useBanglaScript = false) {
+        return `${this.toDateString(useBanglaScript)} ${this.toTimeString()}`;
     }
 
-    toLocaleDateString() {
-        return this.toDateString();
+    toLocaleDateString(useBanglaScript = false) {
+        return this.toDateString(useBanglaScript);
     }
 
     toLocaleTimeString() {
         return this.toTimeString();
     }
 
-    toUTCString() {
+    toUTCString(useBanglaScript = false) {
         const utcDate = new Date(this._date.getTime());
         utcDate.setMinutes(utcDate.getMinutes() + utcDate.getTimezoneOffset());
         const bangla = jdToBangla(gregorianToJD(utcDate));
-        return `${DAYS[utcDate.getUTCDay()]} ${bangla.day} ${MONTHS[bangla.month]} ${bangla.year}`;
+        
+        const dayArray = useBanglaScript ? DAYS_BANGLA : DAYS;
+        const monthArray = useBanglaScript ? MONTHS_BANGLA : MONTHS;
+        
+        // Convert numbers to Bangla numerals if using Bangla script
+        const day = useBanglaScript ? this.toBanglaNumeral(bangla.day) : bangla.day;
+        const year = useBanglaScript ? this.toBanglaNumeral(bangla.year) : bangla.year;
+        
+        return `${dayArray[utcDate.getUTCDay()]} ${day} ${monthArray[bangla.month]} ${year}`;
     }
 
     toJSON() {
