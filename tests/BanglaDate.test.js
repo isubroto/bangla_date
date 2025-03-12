@@ -8,6 +8,60 @@ describe('BanglaDate', () => {
             const date = new BanglaDate('2024-03-12');
             expect(date).toBeInstanceOf(BanglaDate);
         });
+
+        it('should handle leap years correctly', () => {
+            // 2024 is a leap year
+            const leapDate = new BanglaDate('2024-02-29');
+            expect(leapDate.getMonth()).toBe(10); // Should be Falgun
+            expect(leapDate.getDate()).toBe(17);
+        });
+
+        it('should handle historical dates accurately', () => {
+            // Test a known historical date
+            const historicalDate = new BanglaDate('1971-03-26'); // Bangladesh Independence Day
+            expect(historicalDate.getFullYear()).toBe(1377);
+            expect(historicalDate.getMonth()).toBe(11); // Choitro
+            expect(historicalDate.getDate()).toBe(12);
+        });
+
+        it('should handle significant historical dates', () => {
+            // Language Movement Day
+            const languageDay = new BanglaDate('1952-02-21');
+            expect(languageDay.getFullYear()).toBe(1358);
+            expect(languageDay.getMonth()).toBe(10); // Falgun
+            expect(languageDay.getDate()).toBe(8);
+
+            // First Partition of Bengal
+            const bengalPartition = new BanglaDate('1905-10-16');
+            expect(bengalPartition.getFullYear()).toBe(1312);
+            expect(bengalPartition.getMonth()).toBe(5); // Ashwin
+            expect(bengalPartition.getDate()).toBe(29);
+
+            // Victory Day
+            const victoryDay = new BanglaDate('1971-12-16');
+            expect(victoryDay.getFullYear()).toBe(1378);
+            expect(victoryDay.getMonth()).toBe(8); // Poush
+            expect(victoryDay.getDate()).toBe(1);
+        });
+    });
+
+    describe('regional variations', () => {
+        it('should handle West Bengal month names', () => {
+            const date = new BanglaDate('2024-04-14');
+            expect(date.toString('west-bengal')).toContain('Baisakh');
+            expect(date.toString('west-bengal')).not.toContain('Boishakh');
+        });
+
+        it('should handle Chittagong regional variations', () => {
+            const date = new BanglaDate('2024-04-14');
+            expect(date.toString('chittagong')).toContain('Boishakh');
+            expect(date.toString('chittagong')).not.toContain('Baisakh');
+        });
+
+        it('should default to Bangladesh standard', () => {
+            const date = new BanglaDate('2024-04-14');
+            expect(date.toString()).toContain('Boishakh');
+        });
     });
 
     describe('static methods', () => {
@@ -22,9 +76,24 @@ describe('BanglaDate', () => {
         });
 
         it('should create date from UTC values', () => {
-            const date = BanglaDate.UTC(2024, 2, 12); // March 12, 2024
+            const date = BanglaDate.UTC(2024, 2, 12);
             expect(date).toBeInstanceOf(BanglaDate);
             expect(date.getUTCMonth()).toBeDefined();
+        });
+    });
+
+    describe('month transitions', () => {
+        it('should handle month transitions correctly', () => {
+            const date = new BanglaDate('2024-04-14'); // Pohela Boishakh
+            expect(date.getFullYear()).toBe(1431);
+            expect(date.getMonth()).toBe(0); // Boishakh
+            expect(date.getDate()).toBe(1);
+        });
+
+        it('should handle last day of month correctly', () => {
+            const date = new BanglaDate('2024-05-14');
+            expect(date.getMonth()).toBe(0); // Boishakh
+            expect(date.getDate()).toBe(31); // Last day of Boishakh
         });
     });
 
@@ -75,6 +144,14 @@ describe('BanglaDate', () => {
             expect(date.getDate()).toBe(15);
         });
 
+        it('should handle date overflow correctly', () => {
+            date.setDate(31);
+            expect(date.getDate()).toBe(31);
+            date.setDate(32); // Should roll over to next month
+            expect(date.getDate()).toBe(1);
+            expect(date.getMonth()).toBe(11); // Should move to next month
+        });
+
         it('should set month', () => {
             const newTime = date.setMonth(5);
             expect(typeof newTime).toBe('number');
@@ -105,25 +182,18 @@ describe('BanglaDate', () => {
             expect(str).toContain('bar'); // All Bangla days end with 'bar'
         });
 
-        it('should convert to date string', () => {
+        it('should format dates correctly', () => {
+            expect(date.toString()).toMatch(/^[A-Za-z]+bar \d{1,2} [A-Za-z]+ \d{4}$/);
+            expect(date.toDateString()).toMatch(/^[A-Za-z]+ [A-Za-z]+ \d{1,2} \d{4}$/);
+        });
+
+        it('should convert to various string formats', () => {
             expect(typeof date.toDateString()).toBe('string');
-        });
-
-        it('should convert to time string', () => {
             expect(typeof date.toTimeString()).toBe('string');
-        });
-
-        it('should convert to locale string', () => {
             expect(typeof date.toLocaleString()).toBe('string');
             expect(typeof date.toLocaleDateString()).toBe('string');
             expect(typeof date.toLocaleTimeString()).toBe('string');
-        });
-
-        it('should convert to UTC string', () => {
             expect(typeof date.toUTCString()).toBe('string');
-        });
-
-        it('should convert to JSON', () => {
             expect(typeof date.toJSON()).toBe('string');
             expect(typeof date.toISOString()).toBe('string');
         });

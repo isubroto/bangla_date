@@ -8,6 +8,14 @@ const MONTHS = ['Boishakh', 'Joishtho', 'Asharh', 'Shrabon', 'Bhadro', 'Ashwin',
                 'Kartik', 'Ogrohayon', 'Poush', 'Magh', 'Falgun', 'Choitro'];
 const DAYS = ['Robibar', 'Sombar', 'Mongolbar', 'Budhbar', 'Brihoshpotibar', 'Shukrobar', 'Shonibar'];
 
+// Regional variations for month names
+const REGIONAL_MONTHS = {
+    'west-bengal': ['Baisakh', 'Jaishtha', 'Ashadh', 'Shraban', 'Bhadra', 'Ashwin',
+                   'Kartik', 'Agrahayon', 'Poush', 'Magh', 'Phalgun', 'Chaitra'],
+    'chittagong': ['Boishakh', 'Joishtho', 'Asharh', 'Shrabon', 'Bhadro', 'Ashwin',
+                   'Kartik', 'Ogrohayon', 'Poush', 'Magh', 'Falgun', 'Choitro']
+};
+
 /**
  * Converts Gregorian date to Julian Day Number
  * @private
@@ -37,16 +45,23 @@ function jdToBangla(jd) {
 
     // Month lengths based on Surya Siddhanta
     const monthLengths = [31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30, 30];
+
+    // Adjust for leap years
+    const adjustedYear = year + 594;
+    if (adjustedYear % 4 === 0 && (adjustedYear % 100 !== 0 || adjustedYear % 400 === 0)) {
+        monthLengths[10] = 31; // Falgun gets an extra day in leap years
+    }
+
     let month = 0;
     let remainingDays = dayOfYear;
 
-    while (remainingDays >= monthLengths[month]) {
+    while (month < 12 && remainingDays >= monthLengths[month]) {
         remainingDays -= monthLengths[month];
         month++;
     }
 
-    return { 
-        year: year + 1,
+    return {
+        year: adjustedYear,
         month: month,
         day: Math.floor(remainingDays) + 1
     };
@@ -58,11 +73,19 @@ function jdToBangla(jd) {
  */
 function banglaToJD(year, month, day) {
     const monthLengths = [31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30, 30];
+
+    // Adjust for leap years
+    if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
+        monthLengths[10] = 31;
+    }
+
     let dayOfYear = day - 1;
     for (let i = 0; i < month; i++) {
         dayOfYear += monthLengths[i];
     }
-    return Math.floor(BANGLA_EPOCH + (year - 1) * 365.25 + dayOfYear);
+
+    const adjustedYear = year - 594;
+    return Math.floor(BANGLA_EPOCH + adjustedYear * 365.25 + dayOfYear);
 }
 
 class BanglaDate {
@@ -139,26 +162,25 @@ class BanglaDate {
     // Setters
     setDate(date) {
         const newJD = banglaToJD(this._banglaDate.year, this._banglaDate.month, date);
-        this._date = new Date(this._date.getTime());
-        this._date.setUTCDate(date);
         this._julianDay = newJD;
         this._banglaDate = jdToBangla(newJD);
+        this._date = new Date(this._date.getTime());
         return this.getTime();
     }
 
     setFullYear(year) {
         const newJD = banglaToJD(year, this._banglaDate.month, this._banglaDate.day);
-        this._date = new Date(this._date.getTime());
         this._julianDay = newJD;
         this._banglaDate = jdToBangla(newJD);
+        this._date = new Date(this._date.getTime());
         return this.getTime();
     }
 
     setMonth(month) {
         const newJD = banglaToJD(this._banglaDate.year, month, this._banglaDate.day);
-        this._date = new Date(this._date.getTime());
         this._julianDay = newJD;
         this._banglaDate = jdToBangla(newJD);
+        this._date = new Date(this._date.getTime());
         return this.getTime();
     }
 
@@ -173,8 +195,16 @@ class BanglaDate {
     setTime(time) { this._date.setTime(time); return time; }
 
     // String representations
-    toString() {
-        return `${DAYS[this.getDay()]} ${this.getDate()} ${MONTHS[this.getMonth()]} ${this.getFullYear()}`;
+    toString(region = 'bangladesh') {
+        const monthArray = region === 'west-bengal' ? REGIONAL_MONTHS['west-bengal'] :
+                         region === 'chittagong' ? REGIONAL_MONTHS['chittagong'] : MONTHS;
+
+        const month = this._banglaDate.month;
+        if (month < 0 || month >= monthArray.length) {
+            throw new Error('Invalid month index');
+        }
+
+        return `${DAYS[this.getDay()]} ${this.getDate()} ${monthArray[month]} ${this.getFullYear()}`;
     }
 
     toDateString() {
