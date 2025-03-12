@@ -328,4 +328,4 @@ class BanglaDate {
     }
 }
 
-module.exports = BanglaDate;
+export default BanglaDate;
