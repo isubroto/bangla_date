@@ -195,7 +195,53 @@ class BanglaDate {
   }
 
   // **Formatted Output**:
-
+  private getMonthName(): string {
+    const monthNames = {
+      en: [
+        "Boishakh",
+        "Jyoishtho",
+        "Asharh",
+        "Shrabon",
+        "Bhadro",
+        "Ashwin",
+        "Kartik",
+        "Ogrohayon",
+        "Poush",
+        "Magh",
+        "Falgun",
+        "Chaitra",
+      ],
+      bn: [
+        "বৈশাখ",
+        "জ্যৈষ্ঠ",
+        "আষাঢ়",
+        "শ্রাবণ",
+        "ভাদ্র",
+        "আশ্বিন",
+        "কার্তিক",
+        "অগ্রহায়ণ",
+        "পৌষ",
+        "মাঘ",
+        "ফাল্গুন",
+        "চৈত্র",
+      ],
+      hi: [
+        "बैशाख",
+        "ज्येष्ठ",
+        "आषाढ",
+        "श्रावण",
+        "भाद्रपद",
+        "आश्विन",
+        "कार्तिक",
+        "अग्राहयण",
+        "पौष",
+        "माघ",
+        "फाल्गुन",
+        "चैत",
+      ],
+    };
+    return monthNames[this.language][this.banglaMonthIndex];
+  }
 
 
 
