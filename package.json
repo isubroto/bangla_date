@@ -8,13 +8,14 @@
   },
   "scripts": {
     "test": "",
-    "start": "tsc && node dist/index.js",
+    "start": "tsc && node dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "eslint": "^9.22.0",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "typescript": "^5.8.3"
   }
 }

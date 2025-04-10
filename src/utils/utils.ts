@@ -1,5 +1,15 @@
-export const numberToWords = (num, language = "en") => {
-  const numbersInWords = {
+type NumberInWords = {
+  [key: number]: string;
+};
+
+type NumbersInWords = {
+  en: NumberInWords;
+  bn: NumberInWords;
+  hi: NumberInWords;
+};
+
+export const numberToWords = (num: number, language: keyof NumbersInWords = "en") => {
+  const numbersInWords: NumbersInWords = {
     en: {
       0: "zero",
       1: "one",
@@ -99,7 +109,10 @@ export const numberToWords = (num, language = "en") => {
   };
 
   // Helper function to convert number to words for numbers below 100
-  const convertBelowHundred = (num, language) => {
+  const convertBelowHundred = (
+    num: number,
+    language: keyof typeof numbersInWords
+  ) => {
     if (num <= 20) {
       return numbersInWords[language][num];
     }
@@ -111,7 +124,7 @@ export const numberToWords = (num, language = "en") => {
   };
 
   // Helper function to convert number to words for numbers below 1000
-  const convertBelowThousand = (num, language) => {
+  const convertBelowThousand = (num:number, language: keyof typeof numbersInWords) => {
     if (num < 100) return convertBelowHundred(num, language);
 
     const hundreds = Math.floor(num / 100);
@@ -143,8 +156,11 @@ export const numberToWords = (num, language = "en") => {
       }`;
 };
 
-export const numberToNumber = (num, language = "en") => {
-  const numbersInNumber = {
+export const numberToNumber = (
+  num: number,
+  language: keyof NumbersInWords = "en"
+) => {
+  const numbersInNumber: NumbersInWords = {
     en: {
       0: "0",
       1: "1",
@@ -183,11 +199,8 @@ export const numberToNumber = (num, language = "en") => {
     },
   };
 
-  const numString = num.toString();
-  let convertedNumber = "";
-  for (let i = 0; i < numString.length; i++) {
-    const digit = parseInt(numString[i], 10);
-    convertedNumber += numbersInNumber[language][digit];
-  }
-  return convertedNumber;
+ return num.toString().replace(
+   /\d/g,
+   (digit) => numbersInNumber[language][parseInt(digit)]
+ );
 };

@@ -1,3 +1,5 @@
+import { numberToNumber } from "../utils/utils.js";
+
 type Language = "en" | "bn" | "hi";
 
 class BanglaDate {
@@ -50,8 +52,8 @@ class BanglaDate {
   }
 
   // **Static Methods**:
-  static now(language: Language = "en"): BanglaDate {
-    return new BanglaDate(new Date(), language);
+  now(): BanglaDate {
+    return new BanglaDate(new Date(), this.language);
   }
 
   static parse(dateString: string, language: Language = "en"): BanglaDate {
@@ -72,7 +74,7 @@ class BanglaDate {
       Chaitra: 11,
     };
 
-    const monthIndex = banglaMonthNames[monthName];
+    const monthIndex = banglaMonthNames[monthName as keyof typeof banglaMonthNames];
     const dayOfMonth = parseInt(day);
     const yearInBS = parseInt(yearWithBS);
 
@@ -112,72 +114,181 @@ class BanglaDate {
   }
 
   // **Accessor Methods**:
-  getDate(): number {
-    return this.banglaDay;
-  }
-
-  getDay(): number {
-    return this.gregorianDate.getDay();
-  }
-
-  getFullYear(): number {
-    if (this.language === "en") {
-      return this.gregorianDate.getFullYear(); // Gregorian year
-    } else {
-      return this.language === "bn" ? this.banglaYear : this.banglaYear + 593; // Bengali/Sanskrit year
+  getDate(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.banglaDay, "bn"); // Gregorian date
+      case "hi":
+        return numberToNumber(this.banglaDay, "hi"); // Bengali date
+      default:
+        return this.banglaDay.toString(); // Default to Bengali date for unsupported languages
     }
   }
 
-  getHours(): number {
-    return this.gregorianDate.getHours();
+  getDay(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getDay(), "bn"); // Bengali day
+      case "hi":
+        return numberToNumber(this.gregorianDate.getDay(), "hi"); // Sanskrit day
+      default:
+        return this.gregorianDate.getDay().toString(); // Default to Gregorian day for unsupported languages
+    }
   }
 
-  getMilliseconds(): number {
-    return this.gregorianDate.getMilliseconds();
+  getFullYear(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.banglaYear, "bn"); // Bengali year
+      case "hi":
+        return numberToNumber(this.banglaYear, "hi"); // Sanskrit year
+      default:
+        return this.banglaYear.toString(); // Default to Bengali year for unsupported languages
+  }
+}
+
+  getHours(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getHours(), "bn"); // Bengali hours
+      case "hi":
+        return numberToNumber(this.gregorianDate.getHours(), "hi"); // Sanskrit hours
+      default:
+        return this.gregorianDate.getHours().toString(); // Default to Gregorian hours for unsupported languages  
+    }
+
   }
 
-  getMinutes(): number {
-    return this.gregorianDate.getMinutes();
+  getMilliseconds(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getMilliseconds(), "bn"); // Bengali milliseconds
+      case "hi":
+        return numberToNumber(this.gregorianDate.getMilliseconds(), "hi"); // Sanskrit milliseconds
+      default:
+        return this.gregorianDate.getMilliseconds().toString(); // Default to Gregorian milliseconds for unsupported languages
+    }
   }
 
-  getMonth(): number {
-    return this.banglaMonthIndex;
+  getMinutes(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getMinutes(), "bn"); // Bengali minutes
+      case "hi":
+        return numberToNumber(this.gregorianDate.getMinutes(), "hi"); // Sanskrit minutes
+      default:
+        return this.gregorianDate.getMinutes().toString(); // Default to Gregorian minutes for unsupported languages
+    }
   }
 
-  getSeconds(): number {
-    return this.gregorianDate.getSeconds();
+  getMonth(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.banglaMonthIndex + 1, "bn"); // Bengali month
+      case "hi":
+        return numberToNumber(this.banglaMonthIndex + 1, "hi"); // Sanskrit month
+      default:
+        return (this.banglaMonthIndex + 1).toString(); // Default to Bengali month for unsupported languages
+    }
   }
 
-  getTime(): number {
-    return this.gregorianDate.getTime();
+  getSeconds(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getSeconds(), "bn"); // Bengali seconds
+      case "hi":
+        return numberToNumber(this.gregorianDate.getSeconds(), "hi"); // Sanskrit seconds
+      default:
+        return this.gregorianDate.getSeconds().toString(); // Default to Gregorian seconds for unsupported languages
+    }
   }
 
-  getTimezoneOffset(): number {
-    return this.gregorianDate.getTimezoneOffset();
+  getTime(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getTime(), "bn"); // Bengali time
+      case "hi":
+        return numberToNumber(this.gregorianDate.getTime(), "hi"); // Sanskrit time
+      default:
+        return this.gregorianDate.getTime().toString(); // Default to Gregorian time for unsupported languages
+    }
   }
 
-  getUTCDate(): number {
-    return this.gregorianDate.getUTCDate();
+  getTimezoneOffset(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getTimezoneOffset(), "bn"); // Bengali timezone offset
+      case "hi":
+        return numberToNumber(this.gregorianDate.getTimezoneOffset(), "hi"); // Sanskrit timezone offset
+      default:
+        return this.gregorianDate.getTimezoneOffset().toString(); // Default to Gregorian timezone offset for unsupported languages
+    }
   }
 
-  getUTCDay(): number {
-    return this.gregorianDate.getUTCDay();
+  getUTCDate(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCDate(), "bn"); // Bengali UTC date
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCDate(), "hi"); // Sanskrit UTC date
+      default:
+        return this.gregorianDate.getUTCDate().toString(); // Default to Gregorian UTC date for unsupported languages
+    }
   }
 
-  getUTCFullYear(): number {
-    return this.gregorianDate.getUTCFullYear();
+  getUTCDay(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCDay(), "bn"); // Bengali UTC day
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCDay(), "hi"); // Sanskrit UTC day
+      default:
+        return this.gregorianDate.getUTCDay().toString(); // Default to Gregorian UTC day for unsupported languages
+    }
   }
 
-  getUTCHours(): number {
-    return this.gregorianDate.getUTCHours();
+  getUTCFullYear(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCFullYear(), "bn"); // Bengali UTC full year
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCFullYear(), "hi"); // Sanskrit UTC full year
+      default:
+        return this.gregorianDate.getUTCFullYear().toString(); // Default to Gregorian UTC full year for unsupported languages
+    }
   }
 
-  getUTCMilliseconds(): number {
-    return this.gregorianDate.getUTCMilliseconds();
+  getUTCHours(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCHours(), "bn"); // Bengali UTC hours
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCHours(), "hi"); // Sanskrit UTC hours
+      default:
+        return this.gregorianDate.getUTCHours().toString(); // Default to Gregorian UTC hours for unsupported languages
+    }
   }
 
-  getUTCMinutes(): number {
-    return this.gregorianDate.getUTCMinutes();
+  getUTCMilliseconds(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCMilliseconds(), "bn"); // Bengali UTC milliseconds
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCMilliseconds(), "hi"); // Sanskrit UTC milliseconds
+      default:
+        return this.gregorianDate.getUTCMilliseconds().toString(); // Default to Gregorian UTC milliseconds for unsupported languages
+    }
+  }
+
+  getUTCMinutes(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCMinutes(), "bn"); // Bengali UTC minutes
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCMinutes(), "hi"); // Sanskrit UTC minutes
+      default:
+        return this.gregorianDate.getUTCMinutes().toString(); // Default to Gregorian UTC minutes for unsupported languages
+    }
   }
 
   getUTCMonth(): number {
@@ -188,12 +299,16 @@ class BanglaDate {
     return this.gregorianDate.getUTCSeconds();
   }
 
-  getYear(): number {
-    return this.language === "en"
-      ? this.gregorianDate.getFullYear() - 1900
-      : this.banglaYear;
+  getYear(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.banglaYear, "bn"); // Bengali year
+      case "hi":
+        return numberToNumber(this.banglaYear, "hi"); // Sanskrit year
+      default:
+        return (this.gregorianDate.getFullYear() - 1900).toString();
+    }
   }
-
   // **Formatted Output**:
   private getMonthName(): string {
     const monthNames = {
