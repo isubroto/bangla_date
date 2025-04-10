@@ -36,7 +36,8 @@ jobs:
           npx semantic-release --branches main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
       - name: Get the latest tag
         id: latest_tag
         run: |
