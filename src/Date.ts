@@ -277,6 +277,35 @@ class BanglaDate {
     return weekDays[this.language][gDay];
   }
 
+  // **toLocaleString() with language formatting**:
+  toLocaleString(
+    locales: string,
+    options: Intl.DateTimeFormatOptions = {}
+  ): string {
+    const weekday = options.weekday ?? "long";
+    const year = options.year ?? "numeric";
+    const month = options.month ?? "long";
+    const day = options.day ?? "numeric";
 
+    const formattedDateParts: string[] = [];
+
+    if (weekday) {
+      formattedDateParts.push(this.getWeekDay());
+    }
+
+    if (day) {
+      formattedDateParts.push(`${this.getDate()}`);
+    }
+
+    if (month) {
+      formattedDateParts.push(this.getMonthName());
+    }
+
+    if (year) {
+      formattedDateParts.push(`${this.getFullYear()}`);
+    }
+
+    return formattedDateParts.join(" ");
+  }
 }
 export default BanglaDate;
