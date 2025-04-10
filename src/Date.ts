@@ -107,7 +107,34 @@ class BanglaDate {
     return new BanglaDate(gDate, language);
   }
 
-  
+  private static isLeapYear(year: number): boolean {
+    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  }
+
+  // **Accessor Methods**:
+  getDate(): number {
+    return this.banglaDay;
+  }
+
+  getDay(): number {
+    return this.gregorianDate.getDay();
+  }
+
+  getFullYear(): number {
+    if (this.language === "en") {
+      return this.gregorianDate.getFullYear(); // Gregorian year
+    } else {
+      return this.language === "bn" ? this.banglaYear : this.banglaYear + 593; // Bengali/Sanskrit year
+    }
+  }
+
+  getHours(): number {
+    return this.gregorianDate.getHours();
+  }
+
+
+
+
 
 
 }
