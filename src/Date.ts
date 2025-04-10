@@ -54,11 +54,60 @@ class BanglaDate {
     return new BanglaDate(new Date(), language);
   }
 
+  static parse(dateString: string, language: Language = "en"): BanglaDate {
+    const [day, monthName, yearWithBS] = dateString.split(" ");
 
+    const banglaMonthNames = {
+      Boishakh: 0,
+      Jyoishtho: 1,
+      Asharh: 2,
+      Shrabon: 3,
+      Bhadro: 4,
+      Ashwin: 5,
+      Kartik: 6,
+      Ogrohayon: 7,
+      Poush: 8,
+      Magh: 9,
+      Falgun: 10,
+      Chaitra: 11,
+    };
 
-  // **Formatted Output**:
+    const monthIndex = banglaMonthNames[monthName];
+    const dayOfMonth = parseInt(day);
+    const yearInBS = parseInt(yearWithBS);
 
+    const gregorianYear = yearInBS + 593;
+    const pohelaBoishakh = new Date(Date.UTC(gregorianYear, 3, 14));
 
+    const monthLengths = [
+      31,
+      31,
+      31,
+      31,
+      31,
+      30,
+      30,
+      30,
+      30,
+      30,
+      BanglaDate.isLeapYear(gregorianYear + 1) ? 30 : 29,
+      30,
+    ];
+
+    let dayOffset = 0;
+    for (let i = 0; i < monthIndex; i++) {
+      dayOffset += monthLengths[i];
+    }
+
+    dayOffset += dayOfMonth - 1;
+    const gDate = new Date(
+      pohelaBoishakh.getTime() + dayOffset * (1000 * 60 * 60 * 24)
+    );
+
+    return new BanglaDate(gDate, language);
+  }
+
+  
 
 
 }
