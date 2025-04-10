@@ -28,7 +28,7 @@ jobs:
           node-version: "23"
 
       - name: Install dependencies
-        run: npm install --no-save semantic-release @semantic-release/git @semantic-release/npm @semantic-release/github @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/changelog
+        run: npm install --no-save semantic-release @semantic-release/git @semantic-release/npm @semantic-release/github @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/changelog @semantic-release/exec
 
       - name: Run semantic-release
         id: release_version

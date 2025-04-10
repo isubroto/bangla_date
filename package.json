@@ -2,8 +2,8 @@
   "name": "@subrotosaha/bangla-date",
   "version": "1.0.0",
   "publishConfig": {
-  "access": "public"
-},
+    "access": "public"
+  },
   "description": "A simple utility package for string manipulation in JavaScript.",
   "type": "module",
   "directories": {
@@ -13,10 +13,27 @@
     "test": "",
     "start": "tsc && node dist/index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "bangla",
+    "date",
+    "calendar",
+    "time",
+    "utility",
+    "string",
+    "manipulation",
+    "javascript",
+    "typescript",
+    "localization",
+    "datetime",
+    "bangla-calendar",
+    "bangla-date",
+    "gregorian",
+    "conversion",
+    "language-support"
+  ],
+  "author": "subrotosaha",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "eslint": "^9.22.0",
     "jest": "^29.7.0",
     "typescript": "^5.8.3"
