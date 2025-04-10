@@ -1,5 +1,5 @@
 {
-  "name": "workspace",
+  "name": "@subrotosaha/bangla-date",
   "version": "1.0.0",
   "description": "A simple utility package for string manipulation in JavaScript.",
   "type": "module",
