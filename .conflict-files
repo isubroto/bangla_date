@@ -1,0 +1,3 @@
+ancestorEntries = ["src/index.ts"]
+ourEntries = ["src/index.ts"]
+theirEntries = ["src/index.ts"]
