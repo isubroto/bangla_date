@@ -2,13 +2,13 @@
   "name": "workspace",
   "version": "1.0.0",
   "description": "A simple utility package for string manipulation in JavaScript.",
-  "main": "index.js",
   "type": "module",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": ""
+    "test": "",
+    "start": "tsc && node dist/index.js",
   },
   "keywords": [],
   "author": "",
