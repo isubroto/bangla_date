@@ -37,18 +37,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Get the latest tag
-        id: latest_tag
-        run: |
-          if git describe --tags --abbrev=0 > /dev/null 2>&1; then
-            LATEST_TAG=$(git describe --tags --abbrev=0)
-          else
-            LATEST_TAG="v0.0.0"
-          fi
-          echo "Latest tag: $LATEST_TAG"
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-          echo "::set-output name=LATEST_TAG::$LATEST_TAG"
-
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
