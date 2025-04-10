@@ -243,6 +243,39 @@ class BanglaDate {
     return monthNames[this.language][this.banglaMonthIndex];
   }
 
+  private getWeekDay(): string {
+    const weekDays = {
+      en: [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ],
+      bn: [
+        "রবিবার",
+        "সোমবার",
+        "মঙ্গলবার",
+        "বুধবার",
+        "বৃহস্পতিবার",
+        "শুক্রবার",
+        "শনিবার",
+      ],
+      hi: [
+        "रविवार",
+        "सोमवार",
+        "मंगलवार",
+        "बुधवार",
+        "गुरुवार",
+        "शुक्रवार",
+        "शनिवार",
+      ],
+    };
+    const gDay = this.gregorianDate.getDay();
+    return weekDays[this.language][gDay];
+  }
 
 
 }
