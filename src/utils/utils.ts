@@ -157,7 +157,7 @@ export const numberToWords = (num: number, language: keyof NumbersInWords = "en"
 };
 
 export const numberToNumber = (
-  num: number,
+  num: number|string,
   language: keyof NumbersInWords = "en"
 ) => {
   const numbersInNumber: NumbersInWords = {

@@ -8,11 +8,11 @@ class BanglaDate {
   private banglaDay: number;
   private gregorianDate: Date;
   private language: Language;
+  private date: string;
 
   constructor(gregorianDate: Date, language: Language = "en") {
     this.language = language;
     this.gregorianDate = new Date(gregorianDate.getTime());
-
     const gYear = this.gregorianDate.getUTCFullYear();
     const pohelaBoishakh = new Date(Date.UTC(gYear, 3, 14));
     const isBeforePohelaBoishakh =
@@ -49,14 +49,25 @@ class BanglaDate {
 
     this.banglaMonthIndex = monthIndex;
     this.banglaDay = remainingDays + 1;
+    this.date = numberToNumber(
+      `${this.banglaYear}-${this.banglaMonthIndex + 1}-${
+        this.banglaDay
+      } ${this.gregorianDate.getHours()}:${this.gregorianDate.getMinutes()}:${this.gregorianDate.getSeconds()}.${this.gregorianDate.getMilliseconds()} ${
+        this.language === "bn"
+          ? "সার্বজনীন সময়"
+          : this.language === "hi"
+          ? "सार्वभौमिक समय"
+          : "UTC"
+      }`,
+      this.language
+    );
   }
 
   // **Static Methods**:
-  now(): BanglaDate {
-    return new BanglaDate(new Date(), this.language);
+  now(): string {
+    return this.date;
   }
-
-  static parse(dateString: string, language: Language = "en"): BanglaDate {
+  parse(dateString: string): string {
     const [day, monthName, yearWithBS] = dateString.split(" ");
 
     const banglaMonthNames = {
@@ -74,7 +85,8 @@ class BanglaDate {
       Chaitra: 11,
     };
 
-    const monthIndex = banglaMonthNames[monthName as keyof typeof banglaMonthNames];
+    const monthIndex =
+      banglaMonthNames[monthName as keyof typeof banglaMonthNames];
     const dayOfMonth = parseInt(day);
     const yearInBS = parseInt(yearWithBS);
 
@@ -106,7 +118,8 @@ class BanglaDate {
       pohelaBoishakh.getTime() + dayOffset * (1000 * 60 * 60 * 24)
     );
 
-    return new BanglaDate(gDate, language);
+    const banglaDate = new BanglaDate(gDate, this.language);
+    return banglaDate.date;
   }
 
   private static isLeapYear(year: number): boolean {
@@ -144,8 +157,8 @@ class BanglaDate {
         return numberToNumber(this.banglaYear, "hi"); // Sanskrit year
       default:
         return this.banglaYear.toString(); // Default to Bengali year for unsupported languages
+    }
   }
-}
 
   getHours(): string {
     switch (this.language) {
@@ -154,9 +167,8 @@ class BanglaDate {
       case "hi":
         return numberToNumber(this.gregorianDate.getHours(), "hi"); // Sanskrit hours
       default:
-        return this.gregorianDate.getHours().toString(); // Default to Gregorian hours for unsupported languages  
+        return this.gregorianDate.getHours().toString(); // Default to Gregorian hours for unsupported languages
     }
-
   }
 
   getMilliseconds(): string {
@@ -291,12 +303,26 @@ class BanglaDate {
     }
   }
 
-  getUTCMonth(): number {
-    return this.gregorianDate.getUTCMonth();
+  getUTCMonth(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCMonth(), "bn"); // Bengali UTC month
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCMonth(), "hi"); // Sanskrit UTC month
+      default:
+        return this.gregorianDate.getUTCMonth().toString(); // Default to Gregorian UTC month for unsupported languages
+    }
   }
 
-  getUTCSeconds(): number {
-    return this.gregorianDate.getUTCSeconds();
+  getUTCSeconds(): string {
+    switch (this.language) {
+      case "bn":
+        return numberToNumber(this.gregorianDate.getUTCSeconds(), "bn"); // Bengali UTC seconds
+      case "hi":
+        return numberToNumber(this.gregorianDate.getUTCSeconds(), "hi"); // Sanskrit UTC seconds
+      default:
+        return this.gregorianDate.getUTCSeconds().toString(); // Default to Gregorian UTC seconds for unsupported languages
+    }
   }
 
   getYear(): string {
@@ -394,33 +420,299 @@ class BanglaDate {
 
   // **toLocaleString() with language formatting**:
   toLocaleString(
-    locales: string,
+    locales: Intl.LocalesArgument = "en-US",
     options: Intl.DateTimeFormatOptions = {}
   ): string {
-    const weekday = options.weekday ?? "long";
-    const year = options.year ?? "numeric";
-    const month = options.month ?? "long";
-    const day = options.day ?? "numeric";
+    const {
+      weekday,
+      era,
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      second,
+      hour12 = false,
+      timeZoneName,
+    } = options;
 
-    const formattedDateParts: string[] = [];
+    // Use `Intl.DateTimeFormat` for localized date formatting
+    const dateFormatter = new Intl.DateTimeFormat(locales, options);
 
+    // Map of numbers to localized digits
+    const digitsMap: Record<Language, string[]> = {
+      en: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      bn: ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"],
+      hi: ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"],
+    };
+
+    const localizeNumber = (num: number, pad: boolean = false): string => {
+      const s = pad ? num.toString().padStart(2, "0") : num.toString();
+      return s
+        .split("")
+        .map((d) => digitsMap[this.language][parseInt(d)] ?? d)
+        .join("");
+    };
+
+    const parts: string[] = [];
+
+    // Using `Intl.DateTimeFormat` for weekday and date formatting
     if (weekday) {
-      formattedDateParts.push(this.getWeekDay());
+      parts.push(this.getWeekDay()); // already localized
     }
 
     if (day) {
-      formattedDateParts.push(`${this.getDate()}`);
+      const d = this.getDate();
+      parts.push(
+        localizeNumber(parseInt(numberToNumber(d, "en")), day === "2-digit")
+      );
     }
 
     if (month) {
-      formattedDateParts.push(this.getMonthName());
+      if (["long", "short", "narrow"].includes(month)) {
+        parts.push(this.getMonthName()); // localized month name
+      } else {
+        parts.push(
+          localizeNumber(
+            parseInt(numberToNumber(this.getMonth())) + 1,
+            month === "2-digit"
+          )
+        );
+      }
     }
 
     if (year) {
-      formattedDateParts.push(`${this.getFullYear()}`);
+      const y = parseInt(numberToNumber(this.getFullYear(), "en"));
+      parts.push(
+        localizeNumber(year === "2-digit" ? y % 100 : y, year === "2-digit")
+      );
     }
 
-    return formattedDateParts.join(" ");
+    if (era) {
+      if (this.language === "bn") parts.push("খ্রিস্টাব্দ");
+      else if (this.language === "hi") parts.push("ईस्वी");
+      else parts.push("AD");
+    }
+
+    if (hour || minute || second) {
+      const h = parseInt(numberToNumber(this.getHours(), "en"));
+      const m = parseInt(numberToNumber(this.getMinutes(), "en"));
+      const s = parseInt(numberToNumber(this.getSeconds(), "en"));
+
+      const hr = hour12 ? h % 12 || 12 : h;
+      const timeParts = [];
+
+      if (hour) timeParts.push(localizeNumber(hr, hour === "2-digit"));
+      if (minute) timeParts.push(localizeNumber(m, minute === "2-digit"));
+      if (second) timeParts.push(localizeNumber(s, second === "2-digit"));
+
+      let timeStr = timeParts.join(":");
+      if (hour12) {
+        timeStr +=
+          h >= 12
+            ? this.language === "hi"
+              ? " अपराह्न"
+              : this.language === "bn"
+              ? " অপরাহ্ণ"
+              : " PM"
+            : this.language === "hi"
+            ? " पूर्वाह्न"
+            : this.language === "bn"
+            ? " পূর্বাহ্ণ"
+            : " AM";
+      }
+
+      parts.push(timeStr);
+    }
+
+    if (timeZoneName) {
+      parts.push(timeZoneName); // simple placeholder for time zone name
+    }
+
+    // Use `Intl.DateTimeFormat` to apply final formatting
+    return dateFormatter.format(this.gregorianDate);
+  }
+  // Helper function to format numbers
+  formatNumber(num: number | string): string {
+    return num.toString().padStart(2, "0");
+  }
+  getAMPM(hour: number | string): string {
+    const h = parseInt(hour.toString(), 10);
+    return h >= 12
+      ? this.language === "bn"
+        ? "অপরাহ্ণ"
+        : this.language === "hi"
+        ? "अपराह्न"
+        : "PM"
+      : this.language === "bn"
+      ? "পূর্বাহ্ণ"
+      : this.language === "hi"
+      ? "पूर्वाह्न"
+      : "AM";
+  }
+  // Main format function
+  format(formatString: string): string {
+    const year = this.banglaYear;
+    const month = this.banglaMonthIndex + 1; // Month index starts from 0
+    const day = this.banglaDay;
+    const hours = this.getHours();
+    const minutes = this.getMinutes();
+    const seconds = this.getSeconds();
+
+    const replacements: Record<string, string> = {
+      YYYY: this.formatNumber(year),
+      YY: this.formatNumber(year % 100),
+      MMMM: this.getFormatedMonthName("long"),
+      MMM: this.getFormatedMonthName("short"),
+      MM: this.formatNumber(month),
+      M: month.toString(),
+      DD: this.formatNumber(day),
+      D: day.toString(),
+      HH: this.formatNumber(hours),
+      H: hours.toString(),
+      mm: this.formatNumber(minutes),
+      m: minutes.toString(),
+      ss: this.formatNumber(seconds),
+      s: seconds.toString(),
+      "AM/PM": this.getAMPM(hours),
+    };
+
+    return numberToNumber(
+      formatString.replace(
+        /YYYY|YY|MMMM|MMM|MM|M|DD|D|HH|H|mm|m|ss|s|AM\/PM/g,
+        (match) => replacements[match] || match
+      ),
+      this.language
+    );
+  }
+
+  // Function to get month name in Bangla
+  private getFormatedMonthName(format: "long" | "short" = "long"): string {
+    const monthNames: Record<string, string[]> = {
+      long: [
+        "বৈশাখ",
+        "জ্যৈষ্ঠ",
+        "আষাঢ়",
+        "শ্রাবণ",
+        "ভাদ্রপদ",
+        "আশ্বিন",
+        "কার্তিক",
+        "অগ্রাহায়ণ",
+        "পৌষ",
+        "মাঘ",
+        "ফাল্গুন",
+        "চৈত্র",
+      ],
+      short: [
+        "বৈশা",
+        "জ্যৈ",
+        "আষা",
+        "শ্রা",
+        "ভাদ",
+        "আশ্বি",
+        "কার",
+        "অগ্র",
+        "পৌ",
+        "মা",
+        "ফাল",
+        "চৈ",
+      ],
+    };
+    return monthNames[format][this.banglaMonthIndex];
+  }
+
+  toLocaleDateString(
+    locales?: Intl.LocalesArgument,
+    options: Intl.DateTimeFormatOptions = {}
+  ): string {
+    // If no locales are provided, fall back to the object's language
+    const currentLocale = locales ?? this.language;
+
+    // Supported locales prefixes: "en", "bn", "hi", and their variants (like "en-US", "bn-BD", "hi-IN")
+    const validLocales = ["en", "bn", "hi"];
+
+    // Check if the provided locale is a string (or array of strings)
+    const isValidLocale = Array.isArray(currentLocale)
+      ? currentLocale.some((locale) =>
+          validLocales.some((valid) => locale.startsWith(valid))
+        )
+      : validLocales.some((valid) =>
+          (currentLocale as string).startsWith(valid)
+        );
+
+    if (!isValidLocale) {
+      throw new Error(
+        `Locale ${currentLocale} is not supported. Supported locales are: ${validLocales.join(
+          ", "
+        )}, or any variant of them (e.g., en-US, bn-BD, hi-IN).`
+      );
+    }
+
+    // Define digit maps for supported locales
+    const digitsMap: Record<string, string[]> = {
+      en: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      bn: ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"],
+      hi: ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"],
+    };
+
+    // Helper function to localize digits based on the selected locale
+    // Helper function to localize digits based on the selected locale
+    const localizeNumber = (num: number, currentLocale: string): string => {
+      // Normalize the locale (e.g., "en-US" -> "en", "hi-IN" -> "hi")
+      const normalizedLocale = currentLocale.split("-")[0]; // Takes only the base language code
+
+      // Check if digitsMap has the normalized locale
+      if (!digitsMap[normalizedLocale]) {
+        console.warn(
+          `Digits map for locale '${normalizedLocale}' is missing. Using fallback 'en'.`
+        );
+        return num.toString(); // Fallback to original number if no localization is available
+      }
+
+      // Localize the number
+      const numStr = num.toString();
+
+      return numStr
+        .split("")
+        .map((digit) => {
+          const digitIndex = parseInt(digit, 10);
+
+          // Check if digit is within a valid range (0-9)
+          if (digitIndex >= 0 && digitIndex <= 9) {
+            const localizedDigit = digitsMap[normalizedLocale][digitIndex];
+            return localizedDigit || digit; // Fallback to original digit if mapping fails
+          }
+
+          // Return non-numeric characters (e.g., separators, spaces) unchanged
+          return digit;
+        })
+        .join("");
+    };
+
+    // Create a new DateTimeFormat object with the provided locale and options
+    const dateFormatter = new Intl.DateTimeFormat(currentLocale, options);
+
+    // Format the date using the provided options
+    let formattedDate = dateFormatter.format(this.gregorianDate);
+    let convertedDate = new BanglaDate(
+      new Date(formattedDate),
+      (["en", "bn", "hi"].includes(String(currentLocale).split("-")[0]) 
+        ? String(currentLocale).split("-")[0] as Language 
+        : "en")
+    ).date;
+
+    // Replace any digits in the formatted date with localized digits
+    convertedDate = convertedDate
+      .split("")
+      .map((char) => {
+        if (char >= "0" && char <= "9") {
+          return localizeNumber(parseInt(char), String(currentLocale)); // Ensure currentLocale is a string
+        }
+        return char;
+      })
+      .join("");
+
+    return convertedDate;
   }
 }
 export default BanglaDate;
