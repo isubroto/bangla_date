@@ -132,7 +132,69 @@ class BanglaDate {
     return this.gregorianDate.getHours();
   }
 
+  getMilliseconds(): number {
+    return this.gregorianDate.getMilliseconds();
+  }
 
+  getMinutes(): number {
+    return this.gregorianDate.getMinutes();
+  }
+
+  getMonth(): number {
+    return this.banglaMonthIndex;
+  }
+
+  getSeconds(): number {
+    return this.gregorianDate.getSeconds();
+  }
+
+  getTime(): number {
+    return this.gregorianDate.getTime();
+  }
+
+  getTimezoneOffset(): number {
+    return this.gregorianDate.getTimezoneOffset();
+  }
+
+  getUTCDate(): number {
+    return this.gregorianDate.getUTCDate();
+  }
+
+  getUTCDay(): number {
+    return this.gregorianDate.getUTCDay();
+  }
+
+  getUTCFullYear(): number {
+    return this.gregorianDate.getUTCFullYear();
+  }
+
+  getUTCHours(): number {
+    return this.gregorianDate.getUTCHours();
+  }
+
+  getUTCMilliseconds(): number {
+    return this.gregorianDate.getUTCMilliseconds();
+  }
+
+  getUTCMinutes(): number {
+    return this.gregorianDate.getUTCMinutes();
+  }
+
+  getUTCMonth(): number {
+    return this.gregorianDate.getUTCMonth();
+  }
+
+  getUTCSeconds(): number {
+    return this.gregorianDate.getUTCSeconds();
+  }
+
+  getYear(): number {
+    return this.language === "en"
+      ? this.gregorianDate.getFullYear() - 1900
+      : this.banglaYear;
+  }
+
+  // **Formatted Output**:
 
 
 
