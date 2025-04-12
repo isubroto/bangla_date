@@ -13,7 +13,8 @@
   },
   "scripts": {
     "test": "",
-    "start": "tsc"
+    "start": "tsc",
+    "dev": "tsc && node tests/index.js"
   },
   "keywords": [
     "bangla",

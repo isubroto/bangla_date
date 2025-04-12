@@ -204,3 +204,56 @@ export const numberToNumber = (
    (digit) => numbersInNumber[language][parseInt(digit)]
  );
 };
+
+export function formatBanglaDateToMatchTemplate(banglaDateStr: string, templateStr:string) {
+  // Parse Bangla calendar date
+  const [banglaDatePart] = banglaDateStr.split(" "); // e.g. "1431-12-30"
+  const [year, month, day] = banglaDatePart.split("-");
+
+  // Parse the original UTC date string to a JS Date object
+  const utcDate = new Date(banglaDateStr);
+  if (isNaN(utcDate.getDay())) throw new Error("Invalid Bangla date-time string");
+
+  // Extract time and timezone from template string
+  const timeRegex =
+    /(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)?\s*(GMT[+-]?\d+|UTC|PST|EST|CET|BST)/i;
+  const match = templateStr.match(timeRegex);
+  if (!match) throw new Error("Template time format invalid or unsupported");
+
+  const [, , , , , zoneLabelRaw] = match;
+  const zoneLabel = zoneLabelRaw.toUpperCase();
+
+  // Known timezone offsets from UTC
+  const timeZoneOffsets = {
+    UTC: 0,
+    GMT: 0,
+    PST: -8,
+    EST: -5,
+    CET: 1,
+    BST: 6,
+     // Bangladesh Standard Time
+  };
+
+  // Calculate hour offset
+  let offsetHours = 0;
+  if (zoneLabel.startsWith("GMT") && /[+-]\d+/.test(zoneLabel)) {
+    offsetHours = parseInt(zoneLabel.replace("GMT", ""));
+  } else if (timeZoneOffsets[zoneLabel as keyof typeof timeZoneOffsets] !== undefined) {
+    offsetHours = timeZoneOffsets[zoneLabel as keyof typeof timeZoneOffsets];
+  } else {
+    throw new Error(`Unsupported timezone: ${zoneLabel}`);
+  }
+
+  // Convert UTC date to target timezone
+  const localDate = new Date(utcDate.getTime() + offsetHours * 60 * 60 * 1000);
+
+  // Format time
+  let hour = localDate.getHours();
+  const minute = localDate.getMinutes().toString().padStart(2, "0");
+  const second = localDate.getSeconds().toString().padStart(2, "0");
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+
+  // Return formatted Bangla calendar date with converted time
+  return `${month}/${day}/${year} ${hour}:${minute}:${second} ${ampm} ${zoneLabel}`;
+}
