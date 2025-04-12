@@ -12,18 +12,23 @@ The `BanglaDate` class provides functionality to work with the Bangla calendar s
 - Handle leap years in the Bangla calendar.
 
 ## Example Usage
+
 ### Installation
+
 ```bash
 npm install @subrotosaha/bangla-date
 ```
+
 ### Importing and Initializing
+
 ```javascript
-import BanglaDate from "./Date/Date.js";
+import BanglaDate from "@subrotosaha/bangla-date";
 
 const banglaDate = new BanglaDate(new Date(), "bn");
 ```
 
 ### Retrieving Date Components
+
 ```javascript
 console.log(banglaDate.getYear()); // Example: ১৪৩১
 console.log(banglaDate.getMonth()); // Example: ১২ (Bangla month index)
@@ -40,6 +45,7 @@ console.log(banglaDate.getUTCDate()); // Example: ১০ (UTC day)
 ```
 
 ### Parsing and Formatting Dates
+
 ```javascript
 console.log(banglaDate.parse("1 - 1 - 1400")); // Example: Parsed Gregorian date
 console.log(banglaDate.format("YYYY-MM-DD")); // Example: ১৪৩১-১২-২৮ (Formatted date)
@@ -50,6 +56,7 @@ console.log(banglaDate.format("DD/MM/YY")); // Example: ২৮/১২/৩১ (Fo
 ```
 
 ### Localizing Dates
+
 ```javascript
 console.log(banglaDate.toLocaleDateString("en-US")); // Example: 10/4/2025 (Localized date string)
 console.log(banglaDate.toLocaleString("bn-BD")); // Example: ১৪৩১-১২-২৮ ২১:১:৫৫ (Localized string)
