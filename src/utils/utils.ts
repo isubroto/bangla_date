@@ -205,55 +205,80 @@ export const numberToNumber = (
  );
 };
 
-export function formatBanglaDateToMatchTemplate(banglaDateStr: string, templateStr:string) {
-  // Parse Bangla calendar date
-  const [banglaDatePart] = banglaDateStr.split(" "); // e.g. "1431-12-30"
+export function formatBanglaDateToMatchTemplate(
+  banglaDateStr: string, // e.g. "1431-12-30 13:39:24.403 UTC"
+  templateStr: string // e.g. "04/12/2025, 1:39:24 PM" or "4/12/2025"
+): string {
+  // 1. Extract Bangla calendar date
+  const [banglaDatePart, timePartRaw] = banglaDateStr.split(" "); // "1431-12-30", "13:39:24.403"
   const [year, month, day] = banglaDatePart.split("-");
+  if (!year || !month || !day) throw new Error("Invalid Bangla date");
 
-  // Parse the original UTC date string to a JS Date object
-  const utcDate = new Date(banglaDateStr);
-  if (isNaN(utcDate.getDay())) throw new Error("Invalid Bangla date-time string");
+  // 2. Try to extract timezone (optional)
+  const timezoneRegex = /(GMT[+-]?\d+|UTC|PST|EST|CET|BST)/i;
+  const tzMatch = templateStr.match(timezoneRegex);
+  const zoneLabel = tzMatch ? tzMatch[1].toUpperCase() : "UTC"; // fallback to UTC
 
-  // Extract time and timezone from template string
-  const timeRegex =
-    /(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)?\s*(GMT[+-]?\d+|UTC|PST|EST|CET|BST)/i;
-  const match = templateStr.match(timeRegex);
-  if (!match) throw new Error("Template time format invalid or unsupported");
-
-  const [, , , , , zoneLabelRaw] = match;
-  const zoneLabel = zoneLabelRaw.toUpperCase();
-
-  // Known timezone offsets from UTC
-  const timeZoneOffsets = {
+  const timeZoneOffsets: Record<string, number> = {
     UTC: 0,
     GMT: 0,
     PST: -8,
     EST: -5,
     CET: 1,
     BST: 6,
-     // Bangladesh Standard Time
   };
 
-  // Calculate hour offset
   let offsetHours = 0;
   if (zoneLabel.startsWith("GMT") && /[+-]\d+/.test(zoneLabel)) {
     offsetHours = parseInt(zoneLabel.replace("GMT", ""));
-  } else if (timeZoneOffsets[zoneLabel as keyof typeof timeZoneOffsets] !== undefined) {
-    offsetHours = timeZoneOffsets[zoneLabel as keyof typeof timeZoneOffsets];
+  } else if (zoneLabel in timeZoneOffsets) {
+    offsetHours = timeZoneOffsets[zoneLabel];
   } else {
-    throw new Error(`Unsupported timezone: ${zoneLabel}`);
+    offsetHours = 0; // unknown zone, fallback to UTC
   }
 
-  // Convert UTC date to target timezone
+  // 3. Extract time from BanglaDate string
+  const timePart = timePartRaw?.split(".")[0]; // "13:39:24"
+  if (!timePart) throw new Error("Missing time in Bangla date");
+
+  const [h, m, s] = timePart.split(":").map(Number);
+  if ([h, m, s].some(isNaN)) throw new Error("Invalid time format");
+
+  const utcDate = new Date(Date.UTC(2000, 0, 1, h, m, s)); // dummy date in UTC
   const localDate = new Date(utcDate.getTime() + offsetHours * 60 * 60 * 1000);
 
-  // Format time
-  let hour = localDate.getHours();
-  const minute = localDate.getMinutes().toString().padStart(2, "0");
-  const second = localDate.getSeconds().toString().padStart(2, "0");
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12 || 12;
+  // 4. Extract template type (date, time, or datetime)
+  const isTimeOnly = /(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)?/i.test(templateStr);
+  const isDateOnly =
+    /\d{1,2}\/\d{1,2}\/\d{4}/.test(templateStr) ||
+    /\d{1,2}-\d{1,2}-\d{4}/.test(templateStr);
 
-  // Return formatted Bangla calendar date with converted time
-  return `${month}/${day}/${year} ${hour}:${minute}:${second} ${ampm} ${zoneLabel}`;
+  // 5. Format time if template requires time
+  let formattedTime = "";
+  if (isTimeOnly || !isDateOnly) {
+    let hour = localDate.getUTCHours();
+    const minute = localDate.getUTCMinutes().toString().padStart(2, "0");
+    const second = localDate.getUTCSeconds().toString().padStart(2, "0");
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12;
+
+    formattedTime = `${hour}:${minute}:${second} ${ampm}`;
+  }
+
+  // 6. Format date if template requires date
+  let formattedDate = "";
+  if (isDateOnly || !isTimeOnly) {
+    formattedDate = `${month}/${day}/${year}`;
+  }
+
+  // 7. Combine date and time parts based on the template
+  if (isDateOnly && isTimeOnly) {
+    return `${formattedDate}, ${formattedTime} ${zoneLabel}`;
+  } else if (isDateOnly) {
+    return formattedDate;
+  } else if (isTimeOnly) {
+    return `${formattedTime} ${zoneLabel}`;
+  } else {
+    return `${formattedDate} ${formattedTime} ${zoneLabel}`;
+  }
 }

@@ -56,3 +56,9 @@ console.log(banglaDate.toLocaleDateString("hi-IN", {
     timeZone: "Asia/Dhaka",
     timeZoneName: "short",
 })); // 12:00:00 AM (Locale time string)
+
+banglaDate.toLocaleString("bn-BD", {
+    year: "2-digit",
+    month: "long",
+    day: "numeric",
+})
