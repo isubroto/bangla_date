@@ -419,118 +419,121 @@ class BanglaDate {
   }
 
   // **toLocaleString() with language formatting**:
-  toLocaleString(
-    locales: Intl.LocalesArgument = "en-US",
-    options: Intl.DateTimeFormatOptions = {}
+  toLocaleDateString(
+    locales?: Intl.LocalesArgument,
+    options?: Intl.DateTimeFormatOptions
   ): string {
-    const {
-      weekday,
-      era,
-      year,
-      month,
-      day,
-      hour,
-      minute,
-      second,
-      hour12 = false,
-      timeZoneName,
-    } = options;
+    // If no locales are provided, fall back to the object's language
+    const currentLocale = locales ?? this.language;
 
-    // Use `Intl.DateTimeFormat` for localized date formatting
-    const dateFormatter = new Intl.DateTimeFormat(locales, options);
+    // Supported locales prefixes: "en", "bn", "hi", and their variants (like "en-US", "bn-BD", "hi-IN")
+    const validLocales = ["en", "bn", "hi"];
 
-    // Map of numbers to localized digits
-    const digitsMap: Record<Language, string[]> = {
+    // Check if the provided locale is a string (or array of strings)
+    const isValidLocale = Array.isArray(currentLocale)
+      ? currentLocale.some((locale) =>
+          validLocales.some((valid) => locale.startsWith(valid))
+        )
+      : validLocales.some((valid) =>
+          (currentLocale as string).startsWith(valid)
+        );
+
+    if (!isValidLocale) {
+      throw new Error(
+        `Locale ${currentLocale} is not supported. Supported locales are: ${validLocales.join(
+          ", "
+        )}, or any variant of them (e.g., en-US, bn-BD, hi-IN).`
+      );
+    }
+
+    // Define digit maps for supported locales
+    const digitsMap: Record<string, string[]> = {
       en: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
       bn: ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"],
       hi: ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"],
     };
+    const ampmMap: Record<string, string[]> = {
+      en: ["AM", "PM", "GMT", "UTC", "PST", "EST", "CET", "BST"],
+      bn: [
+        "পূর্বাহ্ণ",
+        "অপরাহ্ণ",
+        "জিএমটি",
+        "ইউটিসি",
+        "পিএসটি",
+        "ইএসটি",
+        "সিইটি",
+        "বিএসটি",
+        "জিএমটি",
+      ],
+      hi: [
+        "पूर्वाह्न",
+        "अपराह्न",
+        "जीएमटी",
+        "यूटीसी",
+        "पीएसटी",
+        "ईएसटी",
+        "सीईटी",
+        "बीएसटी",
+        "जीएमटी",
+      ],
+    };
 
-    const localizeNumber = (num: number, pad: boolean = false): string => {
-      const s = pad ? num.toString().padStart(2, "0") : num.toString();
-      return s
+    // Helper function to localize digits based on the selected locale
+    // Helper function to localize digits based on the selected locale
+    const localeKey = currentLocale
+      .toString()
+      .split("-")[0] as keyof typeof digitsMap;
+    const localizeNumber = (num: number | string): string => {
+      return num
+        .toString()
         .split("")
-        .map((d) => digitsMap[this.language][parseInt(d)] ?? d)
+        .map((d: string) => {
+          const digitIndex = parseInt(d, 10);
+          return isNaN(digitIndex) ? d : digitsMap[localeKey][digitIndex] ?? d;
+        })
         .join("");
     };
 
-    const parts: string[] = [];
+    // Format the date using the provided options
+    const nDate = new BanglaDate(new Date(this.gregorianDate)).date;
+    let formattedDate = formatBanglaDateToMatchTemplate(
+      nDate,
+      new Intl.DateTimeFormat(
+        currentLocale.toString().includes("en") ? currentLocale : "en-US",
+        options
+      ).format(this.gregorianDate)
+    );
+    // Localize the formatted date by replacing digits with the appropriate locale digits
 
-    // Using `Intl.DateTimeFormat` for weekday and date formatting
-    if (weekday) {
-      parts.push(this.getWeekDay()); // already localized
-    }
+    formattedDate = formattedDate
+      .split("")
+      .map((char) => (/\d/.test(char) ? localizeNumber(char) : char))
+      .join("");
 
-    if (day) {
-      const d = this.getDate();
-      parts.push(
-        localizeNumber(parseInt(numberToNumber(d, "en")), day === "2-digit")
-      );
-    }
+    formattedDate = formattedDate
+      .split(" ")
+      .map((word) => {
+        // Normalize input by stripping periods and making uppercase
+        const normalized = word.replace(/\./g, "").toUpperCase();
+        const index =
+          ampmMap["en"].indexOf(normalized) > 0
+            ? ampmMap["en"].indexOf(normalized)
+            : ampmMap["en"].indexOf(normalized.replace(/[^A-Za-z]/g, ""));
 
-    if (month) {
-      if (["long", "short", "narrow"].includes(month)) {
-        parts.push(this.getMonthName()); // localized month name
-      } else {
-        parts.push(
-          localizeNumber(
-            parseInt(numberToNumber(this.getMonth())) + 1,
-            month === "2-digit"
-          )
-        );
-      }
-    }
+        if (index !== -1) {
+          return (
+            ampmMap[localeKey][index] +
+            (localeKey !== "en" ? word.replace(/[A-Za-z]/g, "") : "")
+          );
+        }
 
-    if (year) {
-      const y = parseInt(numberToNumber(this.getYear(), "en"));
-      parts.push(
-        localizeNumber(year === "2-digit" ? y % 100 : y, year === "2-digit")
-      );
-    }
+        return word; // Return unchanged if no match
+      })
+      .join(" ");
 
-    if (era) {
-      if (this.language === "bn") parts.push("খ্রিস্টাব্দ");
-      else if (this.language === "hi") parts.push("ईस्वी");
-      else parts.push("AD");
-    }
-
-    if (hour || minute || second) {
-      const h = parseInt(numberToNumber(this.getHours(), "en"));
-      const m = parseInt(numberToNumber(this.getMinutes(), "en"));
-      const s = parseInt(numberToNumber(this.getSeconds(), "en"));
-
-      const hr = hour12 ? h % 12 || 12 : h;
-      const timeParts = [];
-
-      if (hour) timeParts.push(localizeNumber(hr, hour === "2-digit"));
-      if (minute) timeParts.push(localizeNumber(m, minute === "2-digit"));
-      if (second) timeParts.push(localizeNumber(s, second === "2-digit"));
-
-      let timeStr = timeParts.join(":");
-      if (hour12) {
-        timeStr +=
-          h >= 12
-            ? this.language === "hi"
-              ? " अपराह्न"
-              : this.language === "bn"
-              ? " অপরাহ্ণ"
-              : " PM"
-            : this.language === "hi"
-            ? " पूर्वाह्न"
-            : this.language === "bn"
-            ? " পূর্বাহ্ণ"
-            : " AM";
-      }
-
-      parts.push(timeStr);
-    }
-
-    if (timeZoneName) {
-      parts.push(timeZoneName); // simple placeholder for time zone name
-    }
-
-    // Use `Intl.DateTimeFormat` to apply final formatting
-    return parts.join(" ").trim() || dateFormatter.format(this.gregorianDate);
+    //return new BanglaDate(new Date(formattedDate.split(", ")[0])).date;
+    console.log(formattedDate);
+    return formattedDate;
   }
 
   // Helper function to format numbers
@@ -627,7 +630,7 @@ class BanglaDate {
     return monthNames[format][this.banglaMonthIndex];
   }
 
-  toLocaleDateString(
+  toLocaleString(
     locales?: Intl.LocalesArgument,
     options?: Intl.DateTimeFormatOptions
   ): string {
@@ -661,16 +664,7 @@ class BanglaDate {
       hi: ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"],
     };
     const ampmMap: Record<string, string[]> = {
-      en: [
-        "AM",
-        "PM",
-        "GMT",
-        "UTC",
-        "PST",
-        "EST",
-        "CET",
-        "BST",
-      ],
+      en: ["AM", "PM", "GMT", "UTC", "PST", "EST", "CET", "BST"],
       bn: [
         "পূর্বাহ্ণ",
         "অপরাহ্ণ",
@@ -712,16 +706,16 @@ class BanglaDate {
     };
 
     // Format the date using the provided options
-    const dateFormatter = new Intl.DateTimeFormat(currentLocale, options);
     const nDate = new BanglaDate(new Date(this.gregorianDate)).date;
-      let formattedDate=formatBanglaDateToMatchTemplate(
-        nDate,
-        new Intl.DateTimeFormat(currentLocale.toString().includes("en")?currentLocale:"en-US", options).format(
-          this.gregorianDate
-        )
-      )
+    let formattedDate = formatBanglaDateToMatchTemplate(
+      nDate,
+      new Intl.DateTimeFormat(
+        currentLocale.toString().includes("en") ? currentLocale : "en-US",
+        options
+      ).format(this.gregorianDate)
+    );
     // Localize the formatted date by replacing digits with the appropriate locale digits
-    
+
     formattedDate = formattedDate
       .split("")
       .map((char) => (/\d/.test(char) ? localizeNumber(char) : char))
@@ -749,7 +743,7 @@ class BanglaDate {
       .join(" ");
 
     //return new BanglaDate(new Date(formattedDate.split(", ")[0])).date;
-
+    console.log(formattedDate);
     return formattedDate;
   }
 
