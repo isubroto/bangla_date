@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/isubroto/bangla_balender/compare/v1.4.0...v1.5.0) (2025-04-12)
+
+
+### Features
+
+* **docs:** update README for BanglaDate usage examples ([62d68fb](https://github.com/isubroto/bangla_balender/commit/62d68fbf28158b36a69c6bb3e6e8f5755f14a6c5))
+
 # [1.4.0](https://github.com/isubroto/bangla_balender/compare/v1.3.0...v1.4.0) (2025-04-12)
 
 
