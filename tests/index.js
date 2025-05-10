@@ -1,4 +1,4 @@
-import BanglaDate from "../dist/Date/Date.js";
+import BanglaDate from "../dist/Date/index.js";
 
 
 const banglaDate = new BanglaDate(new Date(), "bn");

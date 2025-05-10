@@ -1,4 +1,7 @@
-import { formatBanglaDateToMatchTemplate, numberToNumber } from "../utils/utils.js";
+import {
+  formatBanglaDateToMatchTemplate,
+  numberToNumber,
+} from "../utils/index.js";
 
 type Language = "en" | "bn" | "hi";
 
@@ -420,7 +423,7 @@ class BanglaDate {
 
   // **toLocaleString() with language formatting**:
   toLocaleDateString(
-    locales?: Intl.LocalesArgument,
+    locales?: string | string[],
     options?: Intl.DateTimeFormatOptions
   ): string {
     // If no locales are provided, fall back to the object's language
@@ -479,7 +482,6 @@ class BanglaDate {
     };
 
     // Helper function to localize digits based on the selected locale
-    // Helper function to localize digits based on the selected locale
     const localeKey = currentLocale
       .toString()
       .split("-")[0] as keyof typeof digitsMap;
@@ -532,7 +534,6 @@ class BanglaDate {
       .join(" ");
 
     //return new BanglaDate(new Date(formattedDate.split(", ")[0])).date;
-    console.log(formattedDate);
     return formattedDate;
   }
 
@@ -631,7 +632,7 @@ class BanglaDate {
   }
 
   toLocaleString(
-    locales?: Intl.LocalesArgument,
+    locales?: string | string[],
     options?: Intl.DateTimeFormatOptions
   ): string {
     // If no locales are provided, fall back to the object's language
@@ -689,7 +690,6 @@ class BanglaDate {
       ],
     };
 
-    // Helper function to localize digits based on the selected locale
     // Helper function to localize digits based on the selected locale
     const localeKey = currentLocale
       .toString()

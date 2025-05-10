@@ -1,3 +1,3 @@
-import BanglaDate from "./Date/Date.js";
+import BanglaDate from "./Date/index.js";
 
 export { BanglaDate };
