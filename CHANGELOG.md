@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/isubroto/bangla_balender/compare/v1.5.0...v1.6.0) (2025-05-10)
+
+
+### Features
+
+* migrate obfuscation script to TypeScript and update start script to use ts-node ([06a03cf](https://github.com/isubroto/bangla_balender/commit/06a03cfaf26b9df29909467b121f6e4bdc78d78e))
+
 # [1.5.0](https://github.com/isubroto/bangla_balender/compare/v1.4.0...v1.5.0) (2025-04-12)
 
 
