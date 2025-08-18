@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/isubroto/bangla_balender/compare/v1.6.1...v1.7.0) (2025-08-18)
+
+
+### Features
+
+* **obfuscation:** make obfuscation safer and add post-fix step ([2d4b614](https://github.com/isubroto/bangla_balender/commit/2d4b614683220cb2b4c872dba8a6f75d778cc22b))
+
 ## [1.6.1](https://github.com/isubroto/bangla_balender/compare/v1.6.0...v1.6.1) (2025-08-18)
 
 
