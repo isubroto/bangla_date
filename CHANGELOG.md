@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/isubroto/bangla_balender/compare/v1.6.0...v1.6.1) (2025-08-18)
+
+
+### Bug Fixes
+
+* **date:** shorten Bengali month names for consistency ([75fb171](https://github.com/isubroto/bangla_balender/commit/75fb171563b84ca15cf271145525f3471636bf8c))
+
 # [1.6.0](https://github.com/isubroto/bangla_balender/compare/v1.5.0...v1.6.0) (2025-05-10)
 
 
