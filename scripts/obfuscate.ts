@@ -34,49 +34,53 @@ const files = getAllJsFiles(distDir);
 files.forEach((filePath) => {
   const code = fs.readFileSync(filePath, "utf8");
 
-  // Obfuscate the code to look like React production build
+  // Obfuscate the code with safer settings
   const obfuscatedCode = JavaScriptObfuscator.obfuscate(code, {
     compact: true,
-    controlFlowFlattening: false,
-    deadCodeInjection: true,
-    debugProtection: true,
+    controlFlowFlattening: false, // Keep this false - causes const reassignment issues
+    deadCodeInjection: false, // Set to false - can cause const issues
+    debugProtection: false, // Safer to disable for libraries
     disableConsoleOutput: true,
     identifierNamesGenerator: "mangled",
     identifiersPrefix: "",
     log: false,
-    numbersToExpressions: true,
-    renameGlobals: true,
-    selfDefending: true,
+    numbersToExpressions: false, // Disable - can cause issues
+    renameGlobals: false, // Safer for libraries used by others
+    selfDefending: false, // Disable - can cause runtime errors
     simplify: true,
     splitStrings: false,
-    stringArray: false,
-    stringArrayCallsTransform: false,
-    stringArrayEncoding: [],
-    stringArrayIndexShift: false,
-    stringArrayRotate: false,
-    stringArrayShuffle: false,
-    stringArrayWrappersCount: 0,
-    stringArrayWrappersChainedCalls: false,
+    stringArray: true, // Re-enable but with safe settings
+    stringArrayCallsTransform: true,
+    stringArrayEncoding: ["none"], // Use safe encoding
+    stringArrayIndexShift: true,
+    stringArrayRotate: true,
+    stringArrayShuffle: true,
+    stringArrayWrappersCount: 1,
+    stringArrayWrappersChainedCalls: true,
     stringArrayWrappersParametersMaxCount: 2,
     stringArrayWrappersType: "variable",
-    stringArrayThreshold: 0,
-    transformObjectKeys: true,
+    stringArrayThreshold: 0.75,
+    transformObjectKeys: false, // Safer to disable
     unicodeEscapeSequence: false,
     target: "browser",
-    sourceMap: true,
-    sourceMapMode: "separate",
-    sourceMapBaseUrl: "",
-    sourceMapFileName: "",
+    // Remove source map for production
+    sourceMap: false,
     reservedNames: [],
     reservedStrings: [],
     seed: 0,
-    inputFileName: "",
-    identifiersDictionary: [],
-    namesCache: null,
-    rotateStringArray: false,
-    shuffleStringArray: false,
   }).getObfuscatedCode();
 
+  // Post-process to fix any remaining const reassignment issues
+  let fixedCode = obfuscatedCode;
+
+  // Replace problematic const declarations that get reassigned
+  // This is a safety net in case the obfuscator still creates them
+  fixedCode = fixedCode.replace(
+    /const\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=([^;]+);([^}]*)\1\s*=/g,
+    "let $1=$2;$3$1="
+  );
+
   // Write the obfuscated code back to the file
-  fs.writeFileSync(filePath, obfuscatedCode);
+  fs.writeFileSync(filePath, fixedCode);
 });
+
