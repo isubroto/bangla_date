@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/isubroto/bangla_date/compare/v1.7.0...v1.7.1) (2026-03-08)
+
+
+### Bug Fixes
+
+* expand _applyLocale JSDoc with params and behaviorClarify that _applyLocale handles toLocaleDateString, toLocaleString, ([f6c6f2f](https://github.com/isubroto/bangla_date/commit/f6c6f2f8a5de5b94274eca24ea570925f519077e))
+
 # [1.7.0](https://github.com/isubroto/bangla_balender/compare/v1.6.1...v1.7.0) (2025-08-18)
 
 
