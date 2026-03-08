@@ -102,9 +102,10 @@ class BanglaDate {
    *
    * - Pohela Boishakh (1 Boishakh) is fixed to **April 14 UTC** every year.
    * - All date arithmetic is performed in **UTC** to avoid host-timezone drift.
-   * - Months 1–5 (Boishakh–Bhadro) contain 31 days; months 6–11 (Ashwin–Falgun)
-   *   contain 30 days; month 12 (Chaitra) has 30 days in a common year and 31
-   *   days in a Bangla leap year (when the following Gregorian year is a leap year).
+   * - Months 1–5 (Boishakh–Bhadra) contain 31 days; months 6–10 (Ashwin–Magh)
+   *   contain 30 days; month 11 (Falgun) has 29 days in a common year and 30
+   *   days in a Bangla leap year (when the following Gregorian year is a leap year);
+   *   month 12 (Chaitra) always contains 30 days.
    *
    * @param gregorianDate - Any valid JavaScript `Date` object. Time-of-day
    *   components are preserved so that arithmetic and formatting methods can
@@ -281,8 +282,8 @@ class BanglaDate {
    *
    * > **Note:** Pass the Gregorian reference year, *not* the Bangla year.
    * > Bangla leap-year determination (see `getMonthLengths`) tests the year
-   * > *following* the reference year because Chaitra (month 12) falls in
-   * > that next Gregorian year.
+   * > *following* the reference year because Falgun (month 11) falls in
+   * > mid-February to mid-March of that next Gregorian year.
    *
    * @param year - A full Gregorian year (e.g. `2024`).
    * @returns `true` if `year` is a Gregorian leap year, `false` otherwise.
@@ -300,30 +301,31 @@ class BanglaDate {
    * Returns a 12-element array of day-counts for the Bangla year whose
    * **Pohela Boishakh** (1 Boishakh) falls on April 14 of `gregorianRefYear`.
    *
-   * Per the 1966 Bangladesh National Calendar Reform Committee:
-   * - Months 1–5  (Boishakh–Bhadro)  → **31 days** each  = 155
-   * - Months 6–11 (Ashwin–Falgun)    → **30 days** each  = 180
-   * - Month 12    (Chaitra)          → 30 days (common) or 31 (Bangla leap year)
+   * Per the Bangladesh National Calendar:
+   * - Months 1–5  (Boishakh–Bhadra)  → **31 days** each  = 155
+   * - Months 6–10 (Ashwin–Magh)      → **30 days** each  = 150
+   * - Month 11   (Falgun)            → 29 days (common) or 30 (Bangla leap year)
+   * - Month 12   (Chaitra)           → **30 days** always
    *
    * **Leap year rule:** The Bangla year straddles two Gregorian years.
-   * Chaitra (month 12) falls in mid-March to mid-April of
+   * Falgun (month 11) falls in mid-February to mid-March of
    * `gregorianRefYear + 1`, so the leap-year test is applied to
    * `gregorianRefYear + 1`, not `gregorianRefYear` itself.
    *
-   * Totals: 365 (common) / 366 (leap).
+   * Totals: 364 (common) / 365 (leap).
    *
    * @param gregorianRefYear - The Gregorian year in which Pohela Boishakh
    *   (April 14) of the target Bangla year falls (e.g. pass `2025` for
    *   Bangla year 1432).
-   * @returns An array `[31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30, 30|31]`
+   * @returns An array `[31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29|30, 30]`
    *   indexed 0 (Boishakh) through 11 (Chaitra).
    *
    * @example
    * BanglaDate.getMonthLengths(2024);
-   * // [31,31,31,31,31,30,30,30,30,30,30,31]  — 2025 is leap → Chaitra=31
+   * // [31,31,31,31,31,30,30,30,30,30,30,30]  — 2025 is leap → Falgun=30
    *
    * BanglaDate.getMonthLengths(2025);
-   * // [31,31,31,31,31,30,30,30,30,30,30,30]  — 2026 is not leap → Chaitra=30
+   * // [31,31,31,31,31,30,30,30,30,30,29,30]  — 2026 is not leap → Falgun=29
    */
   static getMonthLengths(gregorianRefYear: number): number[] {
     const isLeap = BanglaDate.isLeapYear(gregorianRefYear + 1);
@@ -332,14 +334,14 @@ class BanglaDate {
       31,
       31,
       31,
-      31, // Boishakh–Bhadro  = 155
+      31, // Boishakh–Bhadra  = 155
       30,
       30,
       30,
       30,
-      30,
-      30, // Ashwin–Falgun    = 180
-      isLeap ? 31 : 30, // Chaitra          = 30 or 31
+      30, // Ashwin–Magh      = 150
+      isLeap ? 30 : 29, // Falgun           = 29 or 30
+      30, // Chaitra          = 30
     ];
   }
 
@@ -1444,9 +1446,9 @@ class BanglaDate {
    *   Defaults to the language set on the instance.
    * @param options - An `Intl.DateTimeFormatOptions` object. When omitted,
    *   defaults to `{ year: 'numeric', month: 'numeric', day: 'numeric' }`.
-   *   **Note:** The `timeZone` property must be `"UTC"` or omitted — any other
-   *   value throws a `BanglaDateError` because the Bangla calendar fields are
-   *   always computed in UTC.
+   *   The `timeZone` property may be any IANA timezone string (e.g.
+   *   `"Asia/Dhaka"`). When a non-UTC timezone is provided, the Bangla
+   *   calendar date fields are recomputed for that local date.
    * @returns A formatted date string, e.g. `"14/4/1432"` or `"১৪/৪/১৪৩২"`.
    *
    * @example
@@ -1813,7 +1815,9 @@ class BanglaDate {
    *   Defaults to the language set on the instance.
    * @param options - An `Intl.DateTimeFormatOptions` object. When omitted,
    *   defaults to `{ year, month, day, hour, minute, second: 'numeric' }`.
-   *   **Note:** The `timeZone` property must be `"UTC"` or omitted.
+   *   The `timeZone` property may be any IANA timezone string (e.g.
+   *   `"Asia/Dhaka"`). When a non-UTC timezone is provided, the Bangla
+   *   calendar date fields are recomputed for that local date.
    * @returns A formatted date-time string, e.g. `"14/4/1432, 6:00:00 AM"` or
    *   `"১৪/৪/১৪৩২, ৬:০০:০০ AM"`.
    *
@@ -1848,7 +1852,7 @@ class BanglaDate {
    *   Defaults to the language set on the instance.
    * @param options - An `Intl.DateTimeFormatOptions` object. When omitted,
    *   defaults to `{ hour: 'numeric', minute: 'numeric', second: 'numeric' }`.
-   *   **Note:** The `timeZone` property must be `"UTC"` or omitted.
+   *   The `timeZone` property may be any IANA timezone string.
    * @returns A formatted time string, e.g. `"6:00:00 AM"` or `"৬:০০:০০ AM"`.
    *
    * @example
@@ -1887,12 +1891,15 @@ class BanglaDate {
    *   the instance's own language is used as the fallback.
    * @param options - An `Intl.DateTimeFormatOptions` object controlling which
    *   fields appear in the output (e.g. `{ year: 'numeric', month: 'long' }`).
-   *   The `timeZone` property must be `"UTC"` or omitted; any other value
-   *   throws a `BanglaDateError`.
+   *   The `timeZone` property may be any IANA timezone string (e.g.
+   *   `"Asia/Dhaka"`, `"America/New_York"`). When a non-UTC timezone is
+   *   supplied, the Bangla calendar date fields (year, month, day, weekday)
+   *   are recomputed from the timezone-local Gregorian date so the output
+   *   is consistent with the displayed local time.
    * @returns The formatted string with all Gregorian calendar fields replaced
    *   by their Bangla equivalents, and digits localised to the resolved script.
    * @throws {BanglaDateError} If the resolved locale is not one of the three
-   *   supported languages, or if `options.timeZone` is non-UTC.
+   *   supported languages.
    * @internal
    */
   private _applyLocale(
@@ -1918,25 +1925,65 @@ class BanglaDate {
     }
 
     const localeKey = resolvedLocale.split("-")[0] as "en" | "bn" | "hi";
+    const tz = options?.timeZone ?? "UTC";
+    const isUTC = tz.toUpperCase() === "UTC";
 
-    // ── 2. Reject non-UTC timeZone — BanglaDate always uses UTC ────────────
-    // The Bangla calendar fields (year, month, day) are computed from UTC,
-    // so allowing a different timeZone would silently produce mismatched
-    // dates.  Callers should convert to UTC before formatting.
-    if (options?.timeZone && options.timeZone.toUpperCase() !== "UTC") {
-      throw new BanglaDateError(
-        `Custom timeZone "${options.timeZone}" is not supported. ` +
-          `BanglaDate always uses UTC for Bangla calendar alignment.`
+    // ── 2. Derive Bangla calendar fields for the requested timezone ────────
+    // When a non-UTC timezone is specified the local calendar date may differ
+    // from the UTC date (e.g. UTC 11 pm in UTC+6 is already the next day).
+    // We extract the local Gregorian year/month/day via Intl, convert that
+    // to a UTC-midnight Date, and build a temporary BanglaDate from it so
+    // all date fields (year, month, day, weekday) reflect the local date.
+    let banglaYear = this.banglaYear;
+    let banglaMonthIndex = this.banglaMonthIndex;
+    let banglaDay = this.banglaDay;
+    let localWeekday = this.gregorianDate.getUTCDay();
+    let localHour = this.gregorianDate.getUTCHours();
+
+    if (!isUTC) {
+      const localParts = new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        weekday: "short",
+        hour: "numeric",
+        hour12: false,
+        timeZone: tz,
+      }).formatToParts(this.gregorianDate);
+
+      const get = (t: string): number =>
+        Number(localParts.find((p) => p.type === t)?.value ?? 0);
+
+      const wdStr = localParts.find((p) => p.type === "weekday")?.value ?? "";
+      const wdMap: Record<string, number> = {
+        Sun: 0,
+        Mon: 1,
+        Tue: 2,
+        Wed: 3,
+        Thu: 4,
+        Fri: 5,
+        Sat: 6,
+      };
+      localWeekday = wdMap[wdStr] ?? this.gregorianDate.getUTCDay();
+      localHour = get("hour") % 24; // hour12:false can return 24 for midnight
+
+      // Build a UTC-midnight Date matching the local calendar date so that
+      // the BanglaDate constructor computes the correct Bangla fields.
+      const localGreg = new Date(
+        Date.UTC(get("year"), get("month") - 1, get("day"))
       );
+      const localBD = new BanglaDate(localGreg, this.language);
+      banglaYear = localBD.banglaYear;
+      banglaMonthIndex = localBD.banglaMonthIndex;
+      banglaDay = localBD.banglaDay;
     }
 
-    // ── 3. Build formatter — always UTC so Bangla fields stay in sync ──────
-    // Use the resolved locale for English variants (en-US, en-GB, …);
-    // for bn/hi we normalise to en-US because we replace all real values
-    // anyway and only need the structural template (separators, era, etc.).
+    // ── 3. Build formatter ─────────────────────────────────────────────────
+    // Pass the requested timezone straight through — Intl will render time
+    // fields (hour, minute, second, dayPeriod, timeZoneName) in local time.
     const formatter = new Intl.DateTimeFormat(
       resolvedLocale.startsWith("en") ? resolvedLocale : "en-US",
-      { ...options, timeZone: "UTC" }
+      { ...options, timeZone: tz }
     );
 
     return formatter
@@ -1948,8 +1995,8 @@ class BanglaDate {
             // Respect 2-digit vs. 4-digit format requested by the caller.
             const byStr =
               part.value.length <= 2
-                ? String(this.banglaYear % 100).padStart(part.value.length, "0")
-                : String(this.banglaYear);
+                ? String(banglaYear % 100).padStart(part.value.length, "0")
+                : String(banglaYear);
             return numberToNumber(byStr, localeKey);
           }
 
@@ -1957,7 +2004,7 @@ class BanglaDate {
           case "month":
             if (/\d/.test(part.value)) {
               // Numeric month — preserve zero-padding from the original part.
-              const mStr = String(this.banglaMonthIndex + 1).padStart(
+              const mStr = String(banglaMonthIndex + 1).padStart(
                 part.value.length,
                 "0"
               );
@@ -1978,10 +2025,7 @@ class BanglaDate {
 
           // ── day ───────────────────────────────────────────────────────────
           case "day": {
-            const dStr = String(this.banglaDay).padStart(
-              part.value.length,
-              "0"
-            );
+            const dStr = String(banglaDay).padStart(part.value.length, "0");
             return numberToNumber(dStr, localeKey);
           }
 
@@ -1994,7 +2038,7 @@ class BanglaDate {
                 : wdOpt === "long" || (!wdOpt && part.value.length > 3)
                 ? "long"
                 : "short";
-            return this.getWeekDayFormat(wdFmt);
+            return this.getWeekDayFormat(wdFmt, localWeekday);
           }
 
           // ── era ───────────────────────────────────────────────────────────
@@ -2008,7 +2052,18 @@ class BanglaDate {
             return numberToNumber(part.value, localeKey);
 
           case "dayPeriod":
-            return this.getAMPM(this.getHours());
+            // Derive AM/PM from the timezone-local hour.
+            return localHour >= 12
+              ? this.language === "bn"
+                ? "অপরাহ্ণ"
+                : this.language === "hi"
+                ? "अपराह्न"
+                : "PM"
+              : this.language === "bn"
+              ? "পূর্বাহ্ণ"
+              : this.language === "hi"
+              ? "पूर्वाह्न"
+              : "AM";
 
           default:
             // Handle fractionalSecond (not in all TS lib versions) + literals,
@@ -2111,11 +2166,16 @@ class BanglaDate {
    * and `_applyLocale()` (for weekday locale output).
    *
    * @param format - Display format. Defaults to `"long"`.
+   * @param dayIndex - Optional 0-based weekday index (0=Sunday…6=Saturday).
+   *   When omitted, the UTC weekday of the underlying timestamp is used.
+   *   Pass an explicit value when formatting in a non-UTC timezone where
+   *   the local weekday may differ from the UTC weekday.
    * @returns The weekday name string.
    * @internal
    */
   private getWeekDayFormat(
-    format: "long" | "short" | "narrow" = "long"
+    format: "long" | "short" | "narrow" = "long",
+    dayIndex?: number
   ): string {
     const weekDays: Record<
       "long" | "short" | "narrow",
@@ -2161,7 +2221,7 @@ class BanglaDate {
         hi: ["र", "सो", "मं", "बु", "गु", "शु", "श"],
       },
     };
-    const gDay = this.gregorianDate.getUTCDay();
+    const gDay = dayIndex ?? this.gregorianDate.getUTCDay();
     return weekDays[format][this.language][gDay];
   }
 }
