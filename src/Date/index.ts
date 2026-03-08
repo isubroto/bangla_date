@@ -1870,15 +1870,30 @@ class BanglaDate {
   }
 
   /**
-   * Shared implementation for `toLocaleDateString` and `toLocaleString`.
+   * Shared implementation for `toLocaleDateString`, `toLocaleString`, and
+   * `toLocaleTimeString`.
    *
    * Uses `Intl.DateTimeFormat.formatToParts()` with `timeZone: "UTC"` so that
    * the formatter and the UTC-based Bangla date components are always in sync,
-   * regardless of the host timezone.  Each part is substituted with the
+   * regardless of the host timezone. Each part is substituted with the
    * corresponding Bangla value before being re-joined, which correctly handles
    * numeric fields, month/weekday names, day-period tokens, and literal
    * separators in a single pass — eliminating all fragile string-search
    * replacements and post-processing loops.
+   *
+   * @param locales - A BCP 47 locale string or array passed directly from the
+   *   public method. Only `"en"`, `"bn"`, `"hi"` (and their region variants
+   *   such as `"en-US"`, `"bn-BD"`, `"hi-IN"`) are supported. If `undefined`,
+   *   the instance's own language is used as the fallback.
+   * @param options - An `Intl.DateTimeFormatOptions` object controlling which
+   *   fields appear in the output (e.g. `{ year: 'numeric', month: 'long' }`).
+   *   The `timeZone` property must be `"UTC"` or omitted; any other value
+   *   throws a `BanglaDateError`.
+   * @returns The formatted string with all Gregorian calendar fields replaced
+   *   by their Bangla equivalents, and digits localised to the resolved script.
+   * @throws {BanglaDateError} If the resolved locale is not one of the three
+   *   supported languages, or if `options.timeZone` is non-UTC.
+   * @internal
    */
   private _applyLocale(
     locales: string | string[] | undefined,
