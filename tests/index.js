@@ -16,7 +16,7 @@ console.log(banglaDate.getFullYear()); // 2023 (Gregorian year)
 console.log(banglaDate.getDate()); // 1 (Bangla date)
 console.log(banglaDate.getTimezoneOffset()); // Timezone offset in minutes
 console.log(banglaDate.getUTCDate()); // 1 (UTC date)
-console.log(banglaDate.parse("1 - 1 - 1400")); // 1-1-1400 (Parsed date)
+console.log(BanglaDate.parse("1 Boishakh 1400")); // static: returns BanglaDate instance
 console.log(banglaDate.format("YYYY-MM-DD")); // 1400-01-01 (Formatted date)
 console.log(banglaDate.format("DD/MM/YYYY")); // 01/01/1400 (Formatted date)
 console.log(banglaDate.format("MM-DD-YYYY W era")); // 01-01-1400 (Formatted date)
