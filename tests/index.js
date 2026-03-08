@@ -1,7 +1,6 @@
 import BanglaDate from "../dist/Date/index.js";
-
-
-const banglaDate = new BanglaDate(new Date("2025-04-13"), "bn");
+const banglaDate = new BanglaDate(new Date("Feb 24, 2026"), "bn");
+console.log(new BanglaDate(new Date("Feb 24, 2026"), "bn"))
 console.log(banglaDate);
 console.log(banglaDate.getYear()); // 1400
 console.log(banglaDate.getMonth()); // 1 (January in Bangla calendar)
