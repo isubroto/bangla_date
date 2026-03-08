@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/isubroto/bangla_date/compare/v1.7.1...v1.8.0) (2026-03-08)
+
+
+### Features
+
+* **calendar+tz:** correct month rules and support timezonesUpdate Bangla calendar month definitions and leap-year handling to matchthe Bangladesh National Calendar. Months1–5 are Boishakh–Bhadra (31d), ([66d56cf](https://github.com/isubroto/bangla_date/commit/66d56cf477f77d93f4066f0060ce755f4deef7d5))
+
 ## [1.7.1](https://github.com/isubroto/bangla_date/compare/v1.7.0...v1.7.1) (2026-03-08)
 
 
