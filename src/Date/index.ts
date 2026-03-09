@@ -1,3 +1,4 @@
+import { DateKit } from "@subrotosaha/datekit";
 import { numberToNumber } from "../utils/index.js";
 
 type Language = "en" | "bn" | "hi";
@@ -127,7 +128,14 @@ class BanglaDate {
    */
   constructor(gregorianDate: Date, language: Language = "en") {
     this.language = language;
-    this.gregorianDate = new Date(gregorianDate.getTime());
+    // Normalise to UTC midnight of the local calendar date so that strings like
+    // "Feb 24, 2026" or "Tue Feb 24 2026 06:00:00 GMT+0600" always produce
+    // 2026-02-24T00:00:00.000Z regardless of the host timezone.
+    const formatted = DateKit.formatFromTimezoneString(
+      gregorianDate,
+      "YYYY-MM-DD"
+    );
+    this.gregorianDate = new Date(`${formatted}T00:00:00+00:00`);
     const gYear = this.gregorianDate.getUTCFullYear();
     // Pohela Boishakh is fixed at April 14 UTC in the revised Bangladesh calendar
     const pohelaBoishakh = new Date(Date.UTC(gYear, 3, 14));

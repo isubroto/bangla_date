@@ -42,5 +42,8 @@
     "javascript-obfuscator": "^4.1.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@subrotosaha/datekit": "^1.1.0"
   }
 }
