@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/isubroto/bangla_date/compare/v1.8.0...v1.9.0) (2026-03-09)
+
+
+### Features
+
+* **date:** normalise input date to UTC midnight and add DateKit- Replace local Date cloning with UTC-normalised date creation in Date constructor so that input dates like "Feb24,2026" or timestamps with timezones consistently map to the same calendar day (YYYY-MM-DDT00:00:00Z) ([c306df8](https://github.com/isubroto/bangla_date/commit/c306df82eab359d30143c09aae594bba3bec87f2))
+
 # [1.8.0](https://github.com/isubroto/bangla_date/compare/v1.7.1...v1.8.0) (2026-03-08)
 
 
